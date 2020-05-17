@@ -1,8 +1,13 @@
 from scapy.all import *
+from scapy.utils import *
 
 
 def print_pkt(pkt):
-    pkt.show()
+    try:
+        print(pkt.getlayer(Raw).load)
+    except:
+        pass
+    # pkt.show()
 
 
-pkt = sniff(prn=print_pkt)
+pkt = sniff(filter='port 23', prn=print_pkt)
