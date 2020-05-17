@@ -1,5 +1,8 @@
+from pip._vendor.distlib.compat import raw_input
 from scapy.all import *
-from scapy.utils import *
+
+username = ""
+password = ""
 
 
 def print_pkt(pkt):
@@ -10,4 +13,8 @@ def print_pkt(pkt):
     # pkt.show()
 
 
-pkt = sniff(filter='port 23', prn=print_pkt)
+target = raw_input("[*] Enter target IP: ")
+port = raw_input("[*] Enter port: ")
+packet_filter = "IP src {} port {}".format(target, port)
+print(packet_filter)
+pkt = sniff(filter=packet_filter, prn=print_pkt)
