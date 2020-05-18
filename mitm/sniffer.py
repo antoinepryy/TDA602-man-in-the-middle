@@ -1,9 +1,10 @@
 from pip._vendor.distlib.compat import raw_input
 from scapy.all import *
 
-username = ""
-password = ""
+buffer = []
+
 interface="eth0"
+
 def get_mac(IP):
     conf.verb = 0
     ans, unans = srp(Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=IP), timeout=2, iface=interface, inter=0.1)
@@ -11,11 +12,12 @@ def get_mac(IP):
         return rcv.sprintf(r"%Ether.src%")
 
 def print_pkt(pkt):
+    global buffer
     try:
         mac = get_mac("192.168.0.42")
         if (pkt[Ether].src == mac and (pkt.getlayer(Raw) is not None)):
-            print(pkt.getlayer(Raw).load)
-            #pkt.show()
+            buffer.append(pkt.getlayer(Raw).load)
+            print(buffer)
         #if (pkt[IP].src == "192.168.0.42" and pkt[IP].dst == "192.168.0.43"):
         #pkt.show()
         #print(pkt.getlayer(Raw).load)
