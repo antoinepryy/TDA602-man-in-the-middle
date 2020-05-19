@@ -1,3 +1,5 @@
 /venv
 .idea
 /report.pdf
+__pycache__/
+*.py[cod]

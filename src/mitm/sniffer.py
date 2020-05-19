@@ -1,6 +1,6 @@
 from scapy.all import *
 
-from .utils import get_mac
+from src.mitm.utils import get_mac
 
 buffer = []
 
