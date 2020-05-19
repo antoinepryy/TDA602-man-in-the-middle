@@ -60,7 +60,7 @@ We are then prompted to enter login and password
 
 #### ARP Spoofing
 
-Some useful fonctions in the program :
+Some useful functions in the program :
 
 ```python
 def get_mac(IP, interface="eth0"):
@@ -110,9 +110,12 @@ Note that this action can be done using Wireshark, but information retrieving mi
 
 ### Countermeasures
 
-- Network Configuration
+1. Network Configuration
+    
+    - Static ARP table : lorem ipsum
+    - 
 
-- Client & Server Configuration
+2. Client & Server Configuration
 
 ### Discussion
 
