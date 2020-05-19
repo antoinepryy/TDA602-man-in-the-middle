@@ -4,6 +4,7 @@
 
 ### Introduction
 
+TODO 
 
 ### Goal of the project
 
@@ -33,16 +34,16 @@ and another machine running Ubuntu 16.04 as a server.
 
 ![VirtualBox VMs](assets/virtualbox-vm.png)
 
-Client IP is 192.168.0.42/24
+Client IP is 192.168.0.42/24.
 
 ![Client's network information](assets/client-ip.png)
 
-Client IP is 192.168.0.43/24
+Client IP is 192.168.0.43/24.
 
 ![Server's network information](assets/server-ip.png)
 
 The attacker is also connected to the network, and uses Kali Linux 
-to perform the attack. Its IP address is 192.168.0.44/24
+to perform the attack. Its IP address is 192.168.0.44/24.
 
 ![Attacker's network information](assets/kali-ip.png)
 
@@ -108,18 +109,39 @@ Note that this action can be done using Wireshark, but information retrieving mi
 
 #### Information Retrieving
 
+TODO
+
 ### Countermeasures
 
 1. Network Configuration
     
-    - Static ARP table : lorem ipsum
-    - 
+    - Use static ARP tables. If you're located in a private network that belongs to you, you can set 
+    it up si you cannot modify ARP tables. It will ensure that receiving wrong packets will not allow an attacker to 
+    spoof you IP address to perform such an attack.
+    - Avoid public networks. These attacks are even easier to do when their is a lot of traffic on the private network,
+    since it might allow to capture a huge amount of data, and thus has a higher probability to obtain useful packets that
+    could allow gaining important information. 
 
 2. Client & Server Configuration
 
+    - Don't use unencrypted channels to communicate over a network. Using secured protocols like SSH over Telnet,
+    and HTTPS over HTTP highly reduces the chances of this type of attack to bring useful information to the attacker.
+    
+3. Security Prevention
+
+    - Only uses what you know, and be careful of what you're doing on the net. A lot of big companies 
+    (Facebook, AirBnb, ...) have well done and secured app, it's now very difficult to gain access or information using these platform.
+     Untrusted platform might be more vulnerable to these type of attacks, since they have a less important budget allocated on security. 
+    - Since data becomes more and more difficult to steal every day, a lot of attacks are now based on phishing, i.e pretending that you're the provider of a service and 
+    thus gaining information directly from the victim, without any suspicion from him.
+
 ### Discussion
 
+TODO
+
 ### Conclusion
+
+TODO
 
 ### Sources
 
