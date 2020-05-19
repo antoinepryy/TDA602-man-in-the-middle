@@ -77,8 +77,11 @@ def use_telnet_credentials(login, password):
         read_data = tn.read_all()
         with open('output_data.txt', 'w') as output:
             output.write(str(read_data))
+        print("[*] Ending Telnet Session: Check output_data.txt")
+        sys.exit(1)
     except:
         print("telnet connection with remote server couldn't be established")
+        sys.exit(1)
 
 
 client_mac = get_mac(target1_ip)
