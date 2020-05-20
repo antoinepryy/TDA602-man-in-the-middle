@@ -126,7 +126,8 @@ Note that this action can be done using Wireshark, but information retrieving mi
 
 #### Information Retrieving
 
-TODO
+lorem ipsum
+dolor sit amet
 
 ### Countermeasures
 
@@ -210,7 +211,8 @@ Thus, when an attacker tries to harm our ARM system, we immediately receive an a
 
 ### Discussion
 
-TODO
+lorem ipsum
+dolor sit amet
 
 ### Conclusion
 
