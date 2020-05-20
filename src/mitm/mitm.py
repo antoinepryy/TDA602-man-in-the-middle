@@ -1,7 +1,7 @@
 from pip._vendor.distlib.compat import raw_input
 from scapy.all import *
 
-from .utils import get_mac
+from src.mitm.utils import get_mac
 
 
 def undo_arp(ip1, ip2):
@@ -54,3 +54,6 @@ def mitm():
         except KeyboardInterrupt:
             undo_arp(target1_ip, target2_ip)
             break
+
+
+mitm()
