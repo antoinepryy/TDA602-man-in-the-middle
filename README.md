@@ -4,14 +4,20 @@
 
 ### Introduction
 
-TODO 
+To end this language-based security course, we were asked to choose a topic, and provide fine analysis about it. We decided
+to talk about a well-known vulnerability, Man In The Middle (MITM). There is a lot of different ways to accomplish this attack, we will cover one of the most 
+famous, which is called ARP poisoning.
+The following report will be organised as follows:
+- The goal of this project, i.e what is our objective
+- How to perform this type of attack, using Python script language
+- How you can prevent it, also by using Python
+- A discussion
 
 ### Goal of the project
 
 The goal of the project is to demonstrate the vulnerability (insecure communications) of the 
 HTTP and telnet protocols and why it is important to use their secure versions SSH and HTTPS. 
-To do that, we will create a sniffing / spoofing python script from scratch (without using libraries 
-like scapy or impacket). In the case of telnet, we will analyse the telnet TCP connection packets 
+To do that, we will create a sniffing / spoofing python script from scratch. In the case of telnet, we will analyse the telnet TCP connection packets 
 sent from the target to another remote machine to get the credentials. We will then send a crafted 
 RST TCP connection packet (by spoofing the IP of the remote machine) to the target, in order to break 
 up the telnet connection, before logging into the remote machine ourselves. In the case of HTTP, we 
@@ -46,6 +52,17 @@ The attacker is also connected to the network, and uses Kali Linux
 to perform the attack. Its IP address is 192.168.0.44/24.
 
 ![Attacker's network information](assets/kali-ip.png)
+
+#### Language and libraries
+
+- Python, which is an interpreted, high-level, general-purpose programming language.
+ Created by Guido van Rossum and first released in 1991, Python's design philosophy emphasizes code readability with its notable use of
+ significant whitespace. It will suits very well to demonstrate things like this since
+it allows performing powerful actions using few lines, which makes our programs more readable, in a short amount of time.
+- Scapy : Scapy is a powerful Python-based interactive packet manipulation program and library. It is able to forge or decode packets of a 
+wide number of protocols, send them on the wire, capture them, 
+store or read them using pcap files, match requests and replies, and much more. It is designed to allow 
+fast packet prototyping by using default values that work. We will use this to efficiently craft malicious packets on our network to demonstrate the vulnerability.
 
 #### Telnet connection
 
@@ -134,6 +151,62 @@ TODO
      Untrusted platform might be more vulnerable to these type of attacks, since they have a less important budget allocated on security. 
     - Since data becomes more and more difficult to steal every day, a lot of attacks are now based on phishing, i.e pretending that you're the provider of a service and 
     thus gaining information directly from the victim, without any suspicion from him.
+    
+4. Detection-based program
+
+    - Since this type of attack is quite stealthy, since it doesn't affect our system in a significant way, excepted by changing our ARP cache (which is usually not bind to any form of security),
+    we can still create a live analysis to detect when ARP cache becomes suspect, and so alert the user, log the intrusion into a file, send a mail, or even cancel the ARP modification. Since Windows is the most-used OS used for client side, we decided to 
+    make a defense system for this platform in particular, as a proof of concept.
+    
+```python
+
+import os
+import re
+import time
+
+from pip._vendor.distlib.compat import raw_input
+
+
+def check_arp_integrity(list):
+    if len(list) == len(set(list)):
+        return False
+    else:
+        return True
+
+
+def anti_spoofing(iface="192.168.0.37"):
+    print("Running anti-spoofing program on interface {}".format(iface))
+    while 1:
+        try:
+            mac_add = []
+            with os.popen('arp -a -N {}'.format(iface)) as f:
+                data = f.read()
+
+            for line in re.findall('([-.0-9]+)\s+([-0-9a-f]{17})\s+(\w+)', data):
+                mac = line[1]
+                if mac != "ff-ff-ff-ff-ff-ff":
+                    mac_add.append(line[1])
+            arp_checking = check_arp_integrity(mac_add)
+            if arp_checking:
+                print("ALERT !!")
+                break
+            time.sleep(1.5)
+
+        except KeyboardInterrupt:
+            print("Stopping program..")
+            break
+
+
+def run_antispoof():
+    ip = raw_input("[*] Enter IP [192.168.0.37]: ")
+    if ip == "":
+        ip = "192.168.0.37"
+    anti_spoofing(ip)
+```
+Thus, when an attacker tries to harm our ARM system, we immediately receive an alert:
+
+![ARP attack triggered](assets/arp-defense.png)
+
 
 ### Discussion
 
@@ -141,13 +214,16 @@ TODO
 
 ### Conclusion
 
-TODO
+Nowadays security on internet becomes very important, we saw that even in a small an quite restricted network it is still possible to leak important information, with few resources.
+This can become highly critical when it comes to important structures like hospitals, data center of bank companies, etc. Secured protocol still exists to counter these attacks, but users can still 
+can tricked with phishing attacks, and if attackers are determined and have enough resources they can also brute force leaked data to extract your useful information. 
 
 ### Sources
 
 1. [How To Do Man In The Middle Attack(MITM) with ARP Spoofing Using Python and Scapy](https://medium.com/@ravisinghmnnit12/how-to-do-man-in-the-middle-attack-mitm-with-arp-spoofing-using-python-and-scapy-441ee577ba1b)
 2. [How to Prevent ARP Spoofing Attacks?](https://www.indusface.com/blog/protect-arp-poisoning/#Identify_the_Spoofing_Attack)
 2. [Scapy Documentation](https://scapy.readthedocs.io/en/latest/)
+2. [ARP poisoning/spoofing: How to detect & prevent it](https://www.comparitech.com/blog/vpn-privacy/arp-poisoning-spoofing-detect-prevent/)
 
 ### Appendix
 
