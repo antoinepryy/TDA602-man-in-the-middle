@@ -2,6 +2,8 @@ import os
 import re
 import time
 
+from pip._vendor.distlib.compat import raw_input
+
 
 def check_arp_integrity(list):
     if len(list) == len(set(list)):
@@ -11,6 +13,7 @@ def check_arp_integrity(list):
 
 
 def anti_spoofing(iface="192.168.0.37"):
+    print("Running anti-spoofing program on interface {}".format(iface))
     while 1:
         try:
             mac_add = []
@@ -32,4 +35,8 @@ def anti_spoofing(iface="192.168.0.37"):
             break
 
 
-anti_spoofing()
+def run_antispoof():
+    ip = raw_input("[*] Enter IP [192.168.0.37]: ")
+    if ip == "":
+        ip = "192.168.0.37"
+    anti_spoofing(ip)

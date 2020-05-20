@@ -55,5 +55,3 @@ def mitm():
             undo_arp(target1_ip, target2_ip)
             break
 
-
-mitm()
