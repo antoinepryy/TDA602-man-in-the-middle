@@ -319,11 +319,11 @@ We didn't implement yet the spoofing of HTTP 404 error from the web server.
 4. Detection-based program
 
     - Since this type of attack is quite stealthy, because it doesn't affect our system in a significant way, excepted by changing our ARP cache (which is usually not bind to any form of security),
-    we can still create a real-time analysis to detect when the ARP cache becomes suspect. We can then alert the user by logging the intrusion into a file, sending an mail or even canceling the ARP modification. Since Windows is the most used OS from the client side, we decided to 
+    we can still create a real-time analysis to detect when the ARP cache becomes suspect. We can then alert the user by logging the intrusion into a file, sending an mail or even canceling the ARP modification. 
+    Since Windows is the most used OS from the client side, we decided to 
     make a defense system for this platform in particular, as a proof of concept:
     
 ```python
-
 import os
 import re
 import time
@@ -375,8 +375,16 @@ It is also possible to use an IDS to filter suspect arp response packets.
 
 ### Results and Discussion
 
-lorem ipsum
-dolor sit amet
+Since our code is not completely working, our actual results might be incomplete, but we can already note that perform 
+a Man In The Middle attack can be very feasible for a determined attacker, even more with new tools that exists now (Ettercap, Driftnet, ...).
+Since this attack relies on that fact that you have to be already connected to the target network, it can be highly infeasible when it comes to 
+attacking a remotely located target (if you want to steal important information about a famous company for example), but variations of this attack could 
+be useful, i.e. IP spoofing for example.
+
+Also we noticed during this project that python is a really powerful tool for developing the exploit, but also for developing the Proof of Concept of the anti-spoofing system.
+Even if our program succeeds in detecting intrusions in real-time, works still remains to have a totally secure countermeasure, since ARP table remains modified by the attack: the program just detect it.
+
+Finally, more work will be needed in order to run code directly on every machine, using regparse python library.
 
 ### Conclusion
 
