@@ -9,9 +9,13 @@ to work a well-known vulnerability: The Man In The Middle (MITM) attack. There a
 famous ones, which is called ARP poisoning.
 
 The following report will be organised as follows:
+
 - The goal of this project, i.e what is our objective
+
 - How to perform this kind of attacks, using Python scripting
+
 - How you can prevent it, also by using Python scripting
+
 - Our results and a discussion
 
 ### Goal of the project
@@ -75,7 +79,14 @@ We are then prompted to enter login and password
 
 ##### ARP Spoofing
 
-Some useful functions in the program :
+The goal is now to modify ARP tables of both client and server computer to make them think the MAC address of the attacker
+is the address corresponding to:
+
+- The client one for the server computer.
+
+- The server one for the client computer.
+ 
+Some useful functions in the program to perform this attack:
 
 ```python
 def get_mac(IP, interface="eth0"):
@@ -229,9 +240,11 @@ Here you can see that we used the front page from facebook as a test login page:
 
 ##### ARP Spoofing
 
+
 We use the same functions, as explained previously, to launch an arp poisonning attack on the client and the web server in order to sniff the HTTP traffic.
 
 ##### Packets Sniffing and Credentials Retrieving
+
 
 Here again, it is possible to use Wireshark to analyse the HTTP traffic and get access to the credentials in the POST request:
 
