@@ -45,7 +45,7 @@ def get_http_credentials(pkt):
         return
 
     payload = str(pkt.getlayer(Raw).load)
-    if "POST" in payload and "lsd=" in payload:
+    if "POST" in payload and "Upgrade-Insecure-Requests" in payload:
         try:
             for i in range(get_index(payload, login_field), len(payload) - 1 ):
                 full_str_credentials = full_str_credentials + payload[i]
