@@ -12,7 +12,7 @@ The following report will be organised as follows:
 - The goal of this project, i.e what is our objective
 - How to perform this kind of attacks, using Python scripting
 - How you can prevent it, also by using Python scripting
-- A discussion
+- Our results and a discussion
 
 ### Goal of the project
 
@@ -120,7 +120,7 @@ Note that this action can be done using Wireshark, but information retrieving mi
 
 ![Wireshark Telnet sniffing](assets/wireshark.png)
 
-However, in our case, we have a script that does the sniffing and the credentials retrieving automaticaly:
+However, in our case, we have a script that does the sniffing and the credentials retrieving automaticaly.
 
 First of all, we use the scapy library and its function `sniff` to analyse incoming packets on our network interface:
 
@@ -141,7 +141,7 @@ def get_telnet_credentials(pkt):
     try:
         pkt.getlayer(Raw).load
 
-    except:
+    except Exception as e:
         return
 
     payload = str(pkt.getlayer(Raw).load)
@@ -192,7 +192,8 @@ def use_telnet_credentials(login, password):
         tn.read_until(b"Password: ", 2)
         tn.write(str_password.encode('ascii') + b"\n")
         
-    except:
+    except Exception as e:
+		print("an error occured: " + str(e))
         print("telnet connection with remote server couldn't be established")
         sys.exit(1)
     
@@ -207,7 +208,8 @@ def use_telnet_credentials(login, password):
         print("[*] Ending Telnet Session: Check output_data.txt For Shadow File Content")
         sys.exit(1)
         
-    except:
+    except Exception as e:
+		print("an error occured: " + str(e))
         print("account not in sudoers list: shadow file unaccessible")
         sys.exit(1)
 ```
@@ -256,7 +258,7 @@ def get_http_credentials(pkt):
     try:
         pkt.getlayer(Raw).load
 
-    except:
+    except Exception as e:
         return
 
     payload = str(pkt.getlayer(Raw).load)
@@ -265,7 +267,8 @@ def get_http_credentials(pkt):
             for i in range(get_index(payload, login_field), len(payload) - 1 ):
                 full_str_credentials = full_str_credentials + payload[i]
 
-        except:
+        except Exception as e:
+			print("an error occured: " + str(e))
             print("credentials not found in POST request")
             return
 
@@ -320,8 +323,7 @@ We didn't implement yet the spoofing of HTTP 404 error from the web server.
 
     - Since this type of attack is quite stealthy, because it doesn't affect our system in a significant way, excepted by changing our ARP cache (which is usually not bind to any form of security),
     we can still create a real-time analysis to detect when the ARP cache becomes suspect. We can then alert the user by logging the intrusion into a file, sending an mail or even canceling the ARP modification. 
-    Since Windows is the most used OS from the client side, we decided to 
-    make a defense system for this platform in particular, as a proof of concept:
+    Since Windows is the most used OS from the client side, we decided to make a defense system for this platform in particular, as a proof of concept:
     
 ```python
 import os
@@ -375,16 +377,15 @@ It is also possible to use an IDS to filter suspect arp response packets.
 
 ### Results and Discussion
 
-Since our code is not completely working, our actual results might be incomplete, but we can already note that perform 
-a Man In The Middle attack can be very feasible for a determined attacker, even more with new tools that exists now (Ettercap, Driftnet, ...).
-Since this attack relies on that fact that you have to be already connected to the target network, it can be highly infeasible when it comes to 
-attacking a remotely located target (if you want to steal important information about a famous company for example), but variations of this attack could 
-be useful, i.e. IP spoofing for example.
+Since our code is not completely functional yet, our actual results might be incomplete, but we can already note that perform 
+a Man In The Middle attack can be very feasible for a determined attacker. Even more with nowdays tools like Ettercap, Driftnet, etc.
+Since this attack relies on the fact that you have to be already connected to the target network, it can be extremely difficult to realise in real case scenarios when it comes to 
+attacking a remotely located target (if you want to steal important informations transiting on the internet to the servers of a huge company for example).
 
-Also we noticed during this project that python is a really powerful tool for developing the exploit, but also for developing the Proof of Concept of the anti-spoofing system.
-Even if our program succeeds in detecting intrusions in real-time, works still remains to have a totally secure countermeasure, since ARP table remains modified by the attack: the program just detect it.
+Also we noticed during this project that Python is a really powerful tool for developing the sniffer/spoofer, but also for developing the Proof of Concept of our anti-spoofing system.
+Even if our program succeeds in detecting intrusions in real-time, work still remains in order to have a totally secure and fault-proof countermeasure. Indeed, for the moment it only detects the attack post-mortem: The program detects the modification but the ARP table remains modified.
 
-Finally, more work will be needed in order to run code directly on every machine, using regparse python library.
+Finally, more work will be needed in order to run the code directly on every machine. For this, we will use the regparse python library.
 
 ### Conclusion
 

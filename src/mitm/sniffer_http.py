@@ -41,7 +41,7 @@ def get_http_credentials(pkt):
     try:
         pkt.getlayer(Raw).load
 
-    except:
+    except Exception as e:
         return
 
     payload = str(pkt.getlayer(Raw).load)
@@ -50,7 +50,8 @@ def get_http_credentials(pkt):
             for i in range(get_index(payload, login_field), len(payload) - 1 ):
                 full_str_credentials = full_str_credentials + payload[i]
 
-        except:
+        except Exception as e:
+            print("an error occured: " + str(e))
             print("credentials not found in POST request")
             return
 
