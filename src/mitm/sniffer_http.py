@@ -52,10 +52,9 @@ def get_http_credentials(pkt):
 
 
 def run():
+    interface = "eth0"
+    
     try:
-        interface = raw_input("Enter Desired Interface [eth0]: ")
-        if interface == "":
-            interface = "eth0"
         target1_ip = raw_input("[*] Enter Client IP: ")
         target2_ip = raw_input("[*] Enter Server IP: ")
 
