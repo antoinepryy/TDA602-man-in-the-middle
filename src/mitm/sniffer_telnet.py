@@ -7,6 +7,9 @@ from src.mitm.utils import get_mac
 
 str_login = ""
 str_password = ""
+login = []
+password = []
+counter = 0
 
 
 def get_telnet_credentials(pkt):
@@ -44,7 +47,7 @@ def get_telnet_credentials(pkt):
 
 
 def use_telnet_credentials(login, password):
-    global target2_ip
+    global target2_ip, str_login, str_password
 
     for i in login:
         str_login = str_login + i
@@ -83,10 +86,6 @@ def use_telnet_credentials(login, password):
 
 
 def run():
-    login = []
-    password = []
-    counter = 0
-
     try:
         target = raw_input("Enter Desired Interface [eth0]: ")
         if target == "":
