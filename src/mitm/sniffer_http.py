@@ -32,10 +32,10 @@ def get_http_credentials(pkt):
                 full_str_credentials = full_str_credentials + payload[i]
 
         except Exception as e:
-            print("credentials not found in POST request")
+            print("Credentials not found in POST request")
             return
         
-        print("credentials found in POST request")
+        print("Credentials found in POST request")
         for j in range(get_index(full_str_credentials, login_field) + len(login_field),
                        full_str_credentials.index("&")):
             user_login = user_login + full_str_credentials[j]
