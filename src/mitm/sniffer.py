@@ -31,6 +31,10 @@ def sniffer():
 
     target = input("[*] Enter target IP: ")
     port = input("[*] Enter port [23]: ")
+    if target == "":
+        print("Not an ip address, exiting...")
+        sys.exit(1)
+
     if port == "":
         port = 23
     packet_filter = ' port {} '.format(port)
