@@ -115,6 +115,11 @@ def undo_arp():
     sys.exit(1)
 ```
 
+Now can can simply run it, and provide as parameters, the IP addresses of targets (and eventually an interface if we want to run this program on another machine):
+
+![Spoofing ARP addresses through Kali](assets/spoofing-python.png)
+
+
 We can see that both the client and the server have their arp cache changed when our python script is running.
 
 One the client we pretend that 192.168.0.43 has the MAC address 08:00:27:d1:98:f9.
