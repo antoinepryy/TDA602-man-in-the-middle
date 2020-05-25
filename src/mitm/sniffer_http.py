@@ -3,6 +3,11 @@ from scapy.all import *
 
 from src.mitm.utils import get_mac
 
+login = ""
+password = ""
+login_field = "email="
+password_field = "passwd="
+
 
 def get_index(buff, subbuff):
     return buff.index(subbuff)
@@ -48,11 +53,6 @@ def get_http_credentials(pkt):
 
 
 def run():
-    login = ""
-    password = ""
-    login_field = "email="
-    password_field = "passwd="
-
     try:
         interface = raw_input("Enter Desired Interface [eth0]: ")
         if interface == "":

@@ -5,6 +5,9 @@ from scapy.all import *
 
 from src.mitm.utils import get_mac
 
+str_login = ""
+str_password = ""
+
 
 def get_telnet_credentials(pkt):
     global counter
@@ -42,9 +45,6 @@ def get_telnet_credentials(pkt):
 
 def use_telnet_credentials(login, password):
     global target2_ip
-
-    str_login = ""
-    str_password = ""
 
     for i in login:
         str_login = str_login + i
