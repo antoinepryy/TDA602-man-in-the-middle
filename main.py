@@ -3,6 +3,7 @@ import argparse
 from src.mitm.anti_spoofing import run_antispoof
 from src.mitm.mitm import mitm
 from src.mitm.sniffer import sniffer
+from src.mitm.sniffer_http import run as sniff_http
 from src.mitm.sniffer_telnet import run as sniff_telnet
 
 parser = argparse.ArgumentParser()
@@ -17,7 +18,7 @@ elif args.action == "telnet":
     sniff_telnet()
 
 elif args.action == "http":
-    sniff_telnet()
+    sniff_http()
 
 elif args.action == "ARP":
     mitm()
