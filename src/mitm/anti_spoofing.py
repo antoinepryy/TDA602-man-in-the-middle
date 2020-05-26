@@ -6,17 +6,22 @@ from pip._vendor.distlib.compat import raw_input
 
 
 def check_arp_integrity(list):
+    # sending arp table based on a specific interface will check if each MAC address is registered only once
     if len(list) == len(set(list)):
         return False
     else:
         return True
 
 
+# this program is intended to work on windows
+# On UNIX systems the regex might be slightly different to parse MAC and IP addresses
 def anti_spoofing(iface="192.168.0.37"):
     print("Running anti-spoofing program on interface {}".format(iface))
     while 1:
         try:
             mac_add = []
+
+            # read each line of ARP table (Windows only)
             with os.popen('arp -a -N {}'.format(iface)) as f:
                 data = f.read()
 
@@ -24,10 +29,14 @@ def anti_spoofing(iface="192.168.0.37"):
                 mac = line[1]
                 if mac != "ff-ff-ff-ff-ff-ff":
                     mac_add.append(line[1])
+
             arp_checking = check_arp_integrity(mac_add)
+
             if arp_checking:
                 print("ALERT !!")
                 break
+
+            # time between each call, a smaller value can detect the intrusion faster but uses more resources
             time.sleep(1.5)
 
         except KeyboardInterrupt:

