@@ -232,6 +232,8 @@ def use_telnet_credentials(login, password):
 
 This function print the login and password sniffed and also, using the `telnetlib` libary, allows us to automatically connect to the server and steal the content of the shadow file.
 
+![Telnet Hacking](assets/telnet-leak.PNG)
+
 
 #### Second case: HTTP connection attack
 
@@ -305,6 +307,9 @@ def get_http_credentials(pkt):
 
 This function allows us to parse the content of the POST HTTP request in order to get the login and the password.
 The function `get_index` returns the index of a character in a string.
+
+![HTTP Hacking](assets/http-leak.PNG)
+
 
 We didn't implement yet the spoofing of HTTP 404 error from the web server.
 
