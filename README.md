@@ -451,21 +451,23 @@ Thus, when an attacker tries to harm our ARM system, we immediately receive an a
 
 ![ARP attack triggered](assets/arp-defense.png)
 
-It is also possible to use an IDS to filter suspect arp response packets.
+It is also possible to use an IDS to filter suspect ARP response packets.
 
 ### Results and Discussion
 
-Since our code is not completely functional yet, our actual results might be incomplete, but we can already note that perform 
-a Man In The Middle attack can be very feasible for a determined attacker. Even more with nowdays tools like Ettercap, Driftnet, etc.
+Originaly, we had additional functionalities in mind for our attack scripts like sending a crafted RST packet to close the client’s Telnet connection or sending a crafted 404 HTTP error packet after the client’s login.
+But with time, we thought that it would make the attack a lot more suspicious on the client's side and finally decided to drop these ideas. We also wanted to create our attacks from scratch (without using premade libraries to help) and fully create/analyse network packets thanks to socket programming. But we rapidly saw that it would just be too long to implement such attacks, on the short duration of the project, without using the help of some well-known packets formatting libraries like Scapy (We are also a bit new in network side programming which didn't help our case).
+This is why we decided to use the library Scapy to help us on our project.
+However, we also decided to add a custom countermeasure part to our project's goal, with the ARP Poisoning detector script, which was really interesting to make.
+
+From the different tests that we realised, we are satisfied of our scripts which work as attended (as the pictures show).
+
+With this project, we can note that perform a Man In The Middle attack can be very feasible for a determined attacker. Even more with nowdays tools like Ettercap, Driftnet, etc.
 Since this attack relies on the fact that you have to be already connected to the target network, it can be extremely difficult to realise in real case scenarios when it comes to 
 attacking a remotely located target (if you want to steal important informations transiting on the internet to the servers of a huge company for example).
 
-Also we noticed during this project that Python is a really powerful tool for developing the sniffer/spoofer, but also for developing the Proof of Concept of our anti-spoofing system.
+Also, we noticed during this project that Python is a really powerful tool for developing the sniffer/spoofer, but also for developing the Proof of Concept of our anti-spoofing system.
 Even if our program succeeds in detecting intrusions in real-time, work still remains in order to have a totally secure and fault-proof countermeasure. Indeed, for the moment it only detects the attack post-mortem: The program detects the modification but the ARP table remains modified.
-
-Finally, more work will be needed in order to run the code directly on every machine. For this, we will use the regparse python library.
-
-### Conclusion
 
 Nowadays, security on the internet becomes very important, we saw that even in a small private network, it is still possible to leak important information, with few resources needed.
 This can become highly critical when it comes to important infrastructures like hospitals, data center of bank companies, etc. Secured protocols have been created to replace older ones that were thought in terms of simplicity/accessibility instead of security. They can counter these attacks, but users can still 
@@ -480,7 +482,7 @@ be tricked by other attacks like social engineering, phishing attacks, etc. And 
 
 ### Appendix
 
-Contributions: BLABLA
+Contributions: A REMPLIR!!!
 
 1. [Client Virtual Machine [ login:client | password:client ]](https://drive.google.com/open?id=1jqys0pS7WHDOQ2o-dHbC_ZloOjKGRBb-)
 2. [Server Virtual Machine [ login:server | password : server ]](https://drive.google.com/open?id=1yCcbmsN0bCVQOsF0VYAkSZGiv8p4rXXd)
