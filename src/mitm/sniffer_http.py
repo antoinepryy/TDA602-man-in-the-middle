@@ -11,7 +11,7 @@ password_field = "passwd="
 def get_index(buff, subbuff):
     return buff.index(subbuff)
 
-
+# Analyse the payload of each POST HTTP packet to fetch the content of the email and password fields
 def get_http_credentials(pkt):
     global user_login
     global user_password
@@ -50,7 +50,7 @@ def get_http_credentials(pkt):
     else:
         return
 
-
+# asks for the client and server IP before initialising sniffing of http packets
 def run():
     interface = "eth0"
     

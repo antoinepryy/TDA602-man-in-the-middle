@@ -21,7 +21,7 @@ def anti_spoofing(iface="192.168.0.37"):
         try:
             mac_add = []
 
-            # read each line of ARP table (Windows only)
+            # reads each line of ARP table (Windows only)
             with os.popen('arp -a -N {}'.format(iface)) as f:
                 data = f.read()
 

