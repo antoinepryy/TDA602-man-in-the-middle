@@ -66,7 +66,8 @@ def use_telnet_credentials(login, password):
         tn.read_until(b"Password: ", 2)
         tn.write(str_password.encode('ascii') + b"\n")
         tn.write(b"sudo cat /etc/shadow\n")
-        # Following line would need to be changed depending of the language configuration of the server machine: actually set for a french VM 
+        # Following line would need to be changed depending of the language configuration of the server machine: actually set for a French VM
+        # Could be replaced by b"[sudo] password for " + str_login.encode('ascii') + b": " in English VM
         tn.read_until(b"[sudo] Mot de passe de " + str_login.encode('ascii') + b" : ", 2)
         tn.write(str_password.encode('ascii') + b"\n")
         tn.write(b"exit\n")

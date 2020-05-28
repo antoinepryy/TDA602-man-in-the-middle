@@ -6,31 +6,30 @@
 
 To complete this language-based security course, we were asked to choose a topic of study, and provide fine analysis about it. We decided
 to work a well-known vulnerability: The Man In The Middle (MITM) attack. There are a lot of different ways to accomplish this attack and we will cover one of the most 
-famous ones, which is called ARP poisoning.
+famous ones, which is called ARP Poisoning.
 
 The following report will be organised as follows:
 
-- The goal of this project, i.e what is our objective
+- The goal of this project, i.e what is our objective.
 
-- How to perform this kind of attacks, using Python scripting
+- How to perform these kind of attacks, using Python scripting.
 
-- How you can prevent it, also by using Python scripting
+- How to prevent these attacks, also using Python scripting.
 
-- Our results and a discussion
+- Our results and a discussion.
 
 ### Goal of the project
 
-The goal of the project is to demonstrate the vulnerability (insecure communications) of the 
-HTTP and telnet protocols and why it is important to use their secure versions SSH and HTTPS. 
-To do that, we will create a sniffing / spoofing python script. In the case of telnet, we will analyse the telnet TCP connection packets 
-sent from the target to another remote machine to get the credentials. We will then log into the remote machine automaticaly and steal the informations countained in the shadow file. In the case of HTTP, we 
-will analyse the HTTP packets, containing credentials, sent from the target to a test website running on our remote server and 
-send a spoofed 404 http error packet to the target before logging into his account.
+The goal of the project is to demonstrate the vulnerability (unsecure communications) of the 
+HTTP and telnet protocols and why it is important to use their secure (encrypted) versions SSH and HTTPS. 
+To do that, we will first create a Man In The Middle Python script to launch an ARP Poisoning attack against a client and a server VM, leading to an IP spoofing situation. Then, in the case of telnet, we will create a telnet sniffing Python script to analyse the payloads of the telnet connection packets 
+sent from the client to the server in order to fetch the unencrypted credentials. The script will then initialise automaticaly a telnet connection to the server with the retrieved credentials and steal the informations countained in the shadow file. In the case of HTTP, we 
+will create an HTTP sniffing Python script to analyse the POST HTTP packets, containing unencrypted credentials, sent from the client to a test website (login page) running on the server and print them to the attacker.
 
 It is a project written in Python that demonstrates application layer protocols’ 
 vulnerabilities. Also, we will first take the point of view of an attacker by creating and 
-executing the script and then switch to a defender’s point of view by discussing the possible 
-countermeasures as we did in the labs.
+executing the scripts and then switch to a defender’s point of view by discussing the possible 
+countermeasures as we did in the labs. As a custom countermeasure, we will create another Python script: An ARP Poisoning detector that checks the local ARP table in real-time to see if it has not been tampered (MAC and IP addresses must stay bijectives).
 
 ### The Attacks
 
@@ -66,6 +65,17 @@ wide number of protocols, send them on the network, capture them,
 store or read them using pcap files, match requests and replies and much more. It is designed to allow 
 fast packet prototyping by using default values that work. We will use this to efficiently craft malicious packets on our network to demonstrate the vulnerability.
 
+
+#### Python code files
+
+- main.py: this file is the central hub to launch all the other scripts. You just need to specify an argument when launching this script between the available list (ARP, telnet, http, defense). For the `http` or `telnet` sniffing commands to work, you should launch the `ARP` command first in a separate window in order to become MITM.
+- src/mitm/mitm.py: this script is launched with the `ARP` command when executing main.py. The script launches the ARP Poisoning attack on the specified IP addresses (client & server) so that the attacker becomes MITM. When stopped, it sends the correct ARP responses packets back to the targets.
+- src/mitm/sniffer_telnet.py: this script is launched with the `telnet` command when executing main.py. The script analyses the content of the telnet connection packets that are transiting between the client and the server to fetch the credentials. Once the credentials are obtained, the script prints the login/password for the attacker and initialises a telnet connection to the server with those credentials. It then tries to read the content of the shadow file and paste its content in a .txt file called `output_date.txt`.
+- src/mitm/sniffer_http.py: this script is launched with the `http` command when executing main.py. The script analyses the content of the POST HTTP packets that are transiting between the client and the server when the client tries to log in on the web page. It fetchs the credentials and print them for the attacker.
+- src/mitm/anti_spoofing.py: this script is launched with the `defense` command when executing main.py. The script only works on a Windows environment for now but it will continuously check the content of the ARP table and detect if a MAC address corresponds to two different IPs. Once it detects an ARP Poisoning attempt, it will print an alert for the administrator.
+- src/mitm/utils.py: Python file not launchable via the main.py. It contains a function used in the majority of our scripts that sends an ARP request to a specified IP in order to get its MAC address.
+- src/webapp/: contains our test login page files (index.html, login.php and style.css) 
+
 #### First case: Telnet connection attack
 
 Our first usecase will be a telnet connection between the client and the server machines. Telnet is not recommended, it's considered as an unsecured 
@@ -77,14 +87,14 @@ We are then prompted to enter login and password
 
 ![Telnet remote access](assets/telnet-connect.png)
 
-##### ARP Spoofing
+##### ARP Poisoning
 
-The goal is now to modify ARP tables of both client and server computer to make them think the MAC address of the attacker
+The goal is now to modify ARP tables of both client and server machines to make them think the MAC address of the attacker
 is the address corresponding to:
 
-- The client one for the server computer.
+- The client IP for the server machine.
 
-- The server one for the client computer.
+- The server IP for the client machine.
  
 Some useful functions in the program to perform this attack:
 
@@ -115,7 +125,7 @@ def undo_arp():
     sys.exit(1)
 ```
 
-Now can can simply run it, and provide as parameters, the IP addresses of targets (and eventually an interface if we want to run this program on another machine):
+Now can can simply run it, and provide as parameters, the IP addresses of targets:
 
 ![Spoofing ARP addresses through Kali](assets/spoofing-python.png)
 
@@ -245,8 +255,7 @@ Here you can see that we used the front page from facebook as a test login page:
 
 ![Fake login page](assets/login-page.PNG)
 
-##### ARP Spoofing
-
+##### ARP Poisoning
 
 We use the same functions, as explained previously, to launch an arp poisonning attack on the client and the web server in order to sniff the HTTP traffic.
 
@@ -309,9 +318,6 @@ This function allows us to parse the content of the POST HTTP request in order t
 The function `get_index` returns the index of a character in a string.
 
 ![HTTP Hacking](assets/http-leak.PNG)
-
-
-We didn't implement yet the spoofing of HTTP 404 error from the web server.
 
 ### Countermeasures
 
