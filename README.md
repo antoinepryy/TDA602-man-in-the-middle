@@ -2,6 +2,8 @@
 
 ## Project - Man In The Middle Attack
 
+Fire Group 29: Antoine Perry & Yann-ly Hervé
+
 ### Introduction
 
 To complete this language-based security course, we were asked to choose a topic of study, and provide fine analysis about it. We decided
@@ -482,7 +484,12 @@ be tricked by other attacks like social engineering, phishing attacks, etc. And 
 
 ### Appendix
 
-Contributions: A REMPLIR!!!
+Contributions:
+- Antoine Perry: Worked specificaly on the mitm and anti_spoofing scripts
+- Yann-ly Hervé: Worked specificaly on the sniffer_telnet and sniffer_http scripts
+
+We worked together on the report and the setup of the environment to do our tests.
+Globally, the quantity of work was shared equally between the two students.
 
 1. [Client Virtual Machine [ login:client | password:client ]](https://drive.google.com/open?id=1jqys0pS7WHDOQ2o-dHbC_ZloOjKGRBb-)
 2. [Server Virtual Machine [ login:server | password : server ]](https://drive.google.com/open?id=1yCcbmsN0bCVQOsF0VYAkSZGiv8p4rXXd)
